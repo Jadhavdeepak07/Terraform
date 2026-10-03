@@ -1,21 +1,19 @@
 variable "ami_id" {
-    description = "insert ami id"
-    type = string
-    default = "ami-08e3b3155fc937a94"
-  
+  description = "Insert AMI ID"
+  type        = string
 }
+
 variable "subnet_id" {
-    type = string
-    default = "subnet-08b41526dcc329ae2"
-  
+  description = "Insert subnet ID"
+  type        = string
 }
+
 variable "type" {
-    type = string
-    default = "t2.micro"
-  
+  description = "EC2 instance type"
+  type        = string
 }
-variable "key {
-    type = string
-    default = "Laptop"
-  
+
+variable "key" {
+  description = "EC2 key pair name"
+  type        = string
 }
