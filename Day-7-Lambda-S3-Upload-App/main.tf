@@ -70,8 +70,10 @@ resource "aws_lambda_function" "s3_upload_lambda" {
     aws_iam_role_policy.lambda_s3_policy
   ]
 }
+
 resource "aws_s3_object" "zip_upload" {
   bucket = aws_s3_bucket.upload_bucket.id
   key    = "lambda_function.zip"
-  source = "arn:aws:s3:::jadhav-terraform-12/lambda_function.zip"
+  source = "${path.module}/lambda_function.zip"
 }
+
