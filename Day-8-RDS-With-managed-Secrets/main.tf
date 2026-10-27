@@ -84,4 +84,6 @@ resource "aws_db_instance" "example" {
   publicly_accessible         = false
   vpc_security_group_ids      = [aws_security_group.example.id]
   db_subnet_group_name        = aws_db_subnet_group.example.name
+  maintenance_window          = "Sun:05:00-Sun:06:00"
+  backup_window               = "06:00-07:00"
 }
