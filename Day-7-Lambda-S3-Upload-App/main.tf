@@ -1,3 +1,4 @@
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "lambda_execution_role"
@@ -22,6 +23,11 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# Create S3 bucket
+resource "aws_s3_bucket" "upload_bucket" {
+  bucket = "jadhav-terraform-12"
+}
+
 # Allow Lambda to upload files to S3
 resource "aws_iam_role_policy" "lambda_s3_policy" {
   name = "lambda_s3_upload_policy"
@@ -37,14 +43,9 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
         "s3:PutObject"
       ]
 
-      Resource = "arn:aws:s3:::jadhav-terraform-12/*"
+      Resource = "${aws_s3_bucket.upload_bucket.arn}/*"
     }]
   })
-}
-
-# Create S3 bucket
-resource "aws_s3_bucket" "upload_bucket" {
-  bucket = "jadhav-terraform-12"
 }
 
 # Create Lambda function
@@ -55,8 +56,8 @@ resource "aws_lambda_function" "s3_upload_lambda" {
   runtime = "python3.12"
   handler = "lambda_function.lambda_handler"
 
-  filename         = "lambda_function.zip"
-  source_code_hash = filebase64sha256("lambda_function.zip")
+  filename         = "${path.module}/lambda_function.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda_function.zip")
 
   environment {
     variables = {
@@ -70,9 +71,9 @@ resource "aws_lambda_function" "s3_upload_lambda" {
   ]
 }
 
+# Upload ZIP file to S3
 resource "aws_s3_object" "zip_upload" {
   bucket = aws_s3_bucket.upload_bucket.id
   key    = "lambda_function.zip"
   source = "${path.module}/lambda_function.zip"
 }
-
