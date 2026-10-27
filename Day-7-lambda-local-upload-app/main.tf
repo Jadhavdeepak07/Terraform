@@ -1,4 +1,3 @@
-
 resource "aws_iam_role" "lambda_role" {
   name = "lambda_execution_role"
 
@@ -21,17 +20,17 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
 
 resource "aws_lambda_function" "my_lambda" {
   function_name = "my_lambda_function"
-  role          =  aws_iam_role.lambda_role.arn #attahching role to lambda 
+  role          = aws_iam_role.lambda_role.arn #attahching role to lambda 
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
   timeout       = 900
   memory_size   = 128
-  filename = "lambda_function.zip"
+  filename      = "lambda_function.zip"
 
- 
+
   source_code_hash = filebase64sha256("lambda_function.zip")
 
   #Without source_code_hash, Terraform might not detect when the code in the ZIP file has changed — meaning your Lambda might not update even after uploading a new ZIP.
 
-#This hash is a checksum that triggers a deployment.
+  #This hash is a checksum that triggers a deployment.
 }
