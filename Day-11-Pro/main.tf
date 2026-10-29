@@ -107,7 +107,7 @@ resource "aws_instance" "server" {
   provisioner "remote-exec" {
     inline = [
       "touch /home/ubuntu/file200",
-      "echo 'hello from veera nareshit hyd FDE' >> /home/ubuntu/file200"
+      "echo 'Hello Devops Project' >> /home/ubuntu/file200"
     ]
   }
 
@@ -155,6 +155,10 @@ resource "null_resource" "run_script" {
     script_hash = filemd5("script.sh") # Rerun only if script changes
   }
 }
+# triggers = {
+#   script_hash = filemd5("script.sh")
+#   instance_id = aws_instance.server.id
+# }
 
 
 #Solution-2 to Re-Run the Provisioner
