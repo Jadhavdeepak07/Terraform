@@ -1,21 +1,48 @@
-
-provider "aws" {
-  region = "ap-south-1"
-}
-
-# VPC
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+resource "aws_vpc" "my_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
-    Name = "MyVPC"
+    Name = "My-VPC"
   }
 }
+resource "aws_internet_gateway" "my_igw" {
+  vpc_id = aws_vpc.my_vpc.id
 
-# Private Subnet 1
-resource "aws_subnet" "private1" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
+  tags = {
+    Name = "My-IGW"
+  }
+}
+resource "aws_subnet" "public_subnet" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "ap-south-1a"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "Public-Subnet"
+  }
+}
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.my_igw.id
+  }
+
+  tags = {
+    Name = "Public-Route-Table"
+  }
+}
+resource "aws_route_table_association" "public_association" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+resource "aws_subnet" "private_subnet_1" {
+  vpc_id            = aws_vpc.my_vpc.id
+  cidr_block        = "10.0.2.0/24"
   availability_zone = "ap-south-1a"
 
   tags = {
@@ -23,10 +50,9 @@ resource "aws_subnet" "private1" {
   }
 }
 
-# Private Subnet 2
-resource "aws_subnet" "private2" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.2.0/24"
+resource "aws_subnet" "private_subnet_2" {
+  vpc_id            = aws_vpc.my_vpc.id
+  cidr_block        = "10.0.3.0/24"
   availability_zone = "ap-south-1b"
 
   tags = {
@@ -34,45 +60,33 @@ resource "aws_subnet" "private2" {
   }
 }
 
-# DB Subnet Group
-resource "aws_db_subnet_group" "mysql" {
-  name = "mysql-db-subnet-group"
+resource "aws_db_subnet_group" "mysql_subnet_group" {
+  name = "mysql-subnet-group"
 
   subnet_ids = [
-    aws_subnet.private1.id,
-    aws_subnet.private2.id
+    aws_subnet.private_subnet_1.id,
+    aws_subnet.private_subnet_2.id
   ]
 
   tags = {
-    Name = "MySQL-DB-Subnet-Group"
+    Name = "MySQL-Subnet-Group"
   }
 }
-
-# RDS MySQL Instance
 resource "aws_db_instance" "mysql_rds" {
-  identifier          = "my-mysql-db"
-  engine              = "mysql"
-  instance_class      = "db.t3.micro"
-  username            = "admin"
-  password            = "Password123!"
-  db_name             = "dev"
-  allocated_storage   = 20
-  skip_final_snapshot = true
+  identifier = "my-mysql-db"
 
-  db_subnet_group_name = aws_db_subnet_group.mysql.name
+  engine         = "mysql"
+  engine_version = "8.0"
+
+  instance_class    = "db.t3.micro"
+  allocated_storage = 20
+
+  username = "admin"
+  password = "YourStrongPassword123!"
+
+  db_subnet_group_name = aws_db_subnet_group.mysql_subnet_group.name
 
   publicly_accessible = true
-}
 
-# Execute SQL script locally
-resource "null_resource" "local_sql_exec" {
-  depends_on = [aws_db_instance.mysql_rds]
-
-  provisioner "local-exec" {
-    command = "mysql -h ${aws_db_instance.mysql_rds.address} -u admin -pPassword123! dev < test.sql"
-  }
-
-  triggers = {
-    always_run = timestamp()
-  }
+  skip_final_snapshot = true
 }
