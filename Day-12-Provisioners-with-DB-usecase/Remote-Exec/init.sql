@@ -1,3 +1,4 @@
+create database dev;
 USE dev;
 
 CREATE TABLE users (
