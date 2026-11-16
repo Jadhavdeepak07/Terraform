@@ -7,7 +7,7 @@ resource "aws_security_group" "sg_multiple_inbound_rules" {
   vpc_id      = "vpc-0c5a181daa9c54ad5"
 
   dynamic "ingress" {
-    for_each = [22, 80, 443]
+    for_each = [22, 80, 443, 8080, 3306]
 
     content {
       description = "Allow traffic from same source"
@@ -33,7 +33,7 @@ resource "aws_security_group" "sg_multiple_inbound_rules" {
 # EC2 Instance
 
 resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0"
+  ami           = "ami-02b2e50944b157a1c"
   instance_type = "t2.micro"
   key_name      = "my-key"
   subnet_id     = "subnet-07a1b04028081083e"
