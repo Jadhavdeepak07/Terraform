@@ -8,6 +8,7 @@ secrets = boto3.client("secretsmanager")
 
 SECRET_ARN = os.environ["SECRET_ARN"]
 DB_NAME = os.environ["DB_NAME"]
+RDS_HOST = os.environ["RDS_HOST"]
 
 
 def lambda_handler(event, context):
@@ -26,11 +27,11 @@ def lambda_handler(event, context):
 
         # Connect to private MySQL RDS
         connection = pymysql.connect(
-            host=credentials["host"],
+            host=RDS_HOST,
             user=credentials["username"],
             password=credentials["password"],
             database=DB_NAME,
-            port=int(credentials["port"]),
+            port=3306,
             connect_timeout=10
         )
 
@@ -48,7 +49,7 @@ def lambda_handler(event, context):
 
     except Exception as error:
 
-        print("Error:", str(error))
+        print("RDS Error:", str(error))
 
         return {
             "statusCode": 500,
